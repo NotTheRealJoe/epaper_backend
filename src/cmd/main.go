@@ -48,7 +48,7 @@ func main() {
 	}
 
 	// start web server
-	handler := epaper_backend.NewHandler(&repo)
+	handler := epaper_backend.NewHandler(&repo, &config)
 	router := mux.NewRouter()
 	setUpHandlers(router, handler)
 	listenPort := strconv.Itoa(config.ListenPort)

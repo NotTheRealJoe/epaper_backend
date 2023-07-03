@@ -8,14 +8,16 @@ import (
 	"github.com/skip2/go-qrcode"
 )
 
-func NewHandler(repo *repository.MysqlRepository) Handler {
+func NewHandler(repo *repository.MysqlRepository, config *Config) Handler {
 	return Handler{
-		repo: repo,
+		repo:   repo,
+		config: config,
 	}
 }
 
 type Handler struct {
-	repo *repository.MysqlRepository
+	repo   *repository.MysqlRepository
+	config *Config
 }
 
 // SampleHandler is a simple handler that returns a test message
@@ -28,12 +30,17 @@ func (h Handler) RootHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // === Below are all handlers for the pi functionality ===
+// AuthQRHandler handles endpoint for creating a new authorization code and generating a QR code for it
 func (h Handler) AuthQRHandler(w http.ResponseWriter, r *http.Request) {
 	// create and save authorization code
 	authCode := h.repo.CreateAuthoriztion()
 
 	// generate the qr to a temp file
-	qrCodeData, err := qrcode.Encode(authCode, qrcode.Low, 176)
+	qrCodeData, err := qrcode.Encode(
+		h.config.PublicBasePath+"/?c="+authCode,
+		qrcode.Low,
+		h.config.EPaperDisplayHeight,
+	)
 	if err != nil {
 		log.Fatal(err)
 	}
