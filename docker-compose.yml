@@ -1,0 +1,28 @@
+version: "3.8"
+
+services:
+  epaper_backend:
+    container_name: epaper_backend
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - 8234:8234/tcp
+    volumes:
+      - "./src:/var/www/html"
+    depends_on:
+      - epaper_database
+  epaper_database:
+    image: mariadb
+    container_name: epaper_database
+    environment:
+      - MARIADB_DATABASE
+      - MARIADB_USER
+      - MARIADB_PASSWORD
+      - MARIADB_ROOT_PASSWORD
+    volumes:
+      - epaper_db:/var/lib/mysql
+    ports:
+      - 3633:3306/tcp
+volumes:
+  epaper_db:
