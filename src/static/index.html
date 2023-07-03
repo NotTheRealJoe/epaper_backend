@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en_US">
+<head>
+    <title>Draw a picture!</title>
+    <style>
+        html, body, div, h1 {
+            padding: 0;
+            margin: 0;
+            font-family: "Comic Sans MS", "Comic Sans", "sans-serif";
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        button {
+            font-family: inherit;
+            width: calc(100% - 10%);
+            height: 100%;
+            margin-left: 5%;
+            margin-right: 5%;
+        }
+
+        #main-canvas {
+            border: 3px solid #696969;
+            touch-action: none;
+        }
+    </style>
+</head>
+<body>
+    <div style="display:flex;flex-direction:column">
+        <div>
+            <h1>draw me a picture!</h1>
+        </div>
+        <div style="flex-grow:1;display:flex;flex-direction:row">
+            <div style="flex-grow:1">
+                <button id="clear-button">clear</button>
+            </div>
+            <div>
+                <canvas height="176" width="264" id="main-canvas"></canvas>
+            </div>
+            <div style="flex-grow:1">
+                <button id="send-button">send</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const NATIVE_HEIGHT = 176;
+        const NATIVE_WIDTH = 264;
+
+        const canvas = document.getElementById("main-canvas");
+        const ctx = canvas.getContext("2d");
+
+        // set up scaled canvas
+        const scaleFactor = Math.min(
+          Math.floor(window.innerHeight / NATIVE_HEIGHT),
+          Math.floor(window.innerWidth / NATIVE_WIDTH)
+        );
+
+        canvas.height = canvas.height * scaleFactor;
+        canvas.width = canvas.width * scaleFactor;
+        ctx.lineWidth = scaleFactor;
+
+        let drawing = false;
+
+        function getPositionOnCanvas(eventClientX, eventClientY) {
+          return [
+            eventClientX - canvas.offsetLeft + window.scrollX,
+            eventClientY - canvas.offsetTop + window.scrollY
+          ];
+        }
+
+        canvas.addEventListener("touchstart", (ev) => {
+          const touch = ev.touches[0];
+          ctx.beginPath();
+          ctx.moveTo(...getPositionOnCanvas(touch.clientX, touch.clientY));
+          drawing = true;
+        })
+
+        canvas.addEventListener("touchend", () => {
+          drawing = false;
+          ctx.closePath();
+        })
+
+        canvas.addEventListener("touchcancel", () => {
+          drawing = false;
+          ctx.closePath();
+        })
+
+        canvas.addEventListener("touchmove", (ev) => {
+          const touch = ev.touches[0];
+          if (drawing) {
+            ctx.lineTo(...getPositionOnCanvas(touch.clientX, touch.clientY));
+            ctx.stroke();
+          }
+        })
+
+        document.getElementById("clear-button").addEventListener("click", () => {
+          if (confirm("you sure???")) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+          }
+        });
+
+        document.getElementById("send-button").addEventListener("click", async () => {
+          const artist = prompt("Artist's name: ");
+
+          //TODO: Disable inputs and show sending message
+
+          const uploadResponse = await fetch("api.php?action=post",  {
+            method: "POST",
+            body: canvas.toDataURL("image/webp")
+          });
+
+          //TODO: Something other than this when its done.
+          alert("Upload done.");
+        })
+    </script>
+</body>
+</html>
