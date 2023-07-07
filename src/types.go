@@ -9,4 +9,5 @@ type Config struct {
 	DBName              string `json:"dbName"`
 	PublicBasePath      string `json:"publicBasePath"`
 	EPaperDisplayHeight int    `json:"ePaperDisplayHeight"`
+	StaticContentPath   string `json:"staticContentPath"`
 }

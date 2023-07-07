@@ -12,4 +12,5 @@ FROM debian:stable-slim
 RUN apt-get -y update && apt-get -y upgrade ca-certificates
 COPY --from=builder /root/app/cmd/epaper-backend /usr/local/bin/
 COPY src/config.json .
+COPY src/static /var/www/static
 ENTRYPOINT epaper-backend
