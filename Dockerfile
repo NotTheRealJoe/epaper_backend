@@ -13,4 +13,5 @@ RUN apt-get -y update && apt-get -y upgrade ca-certificates
 COPY --from=builder /root/app/cmd/epaper-backend /usr/local/bin/
 COPY src/config.json .
 COPY src/static /var/www/static
+COPY src/templates /var/www/templates
 ENTRYPOINT epaper-backend
