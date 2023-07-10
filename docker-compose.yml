@@ -24,5 +24,14 @@ services:
       - epaper_db:/var/lib/mysql
     ports:
       - 3633:3306/tcp
+  epaper_mqtt:
+    build:
+      context: mosquitto
+    container_name: epaper_mqtt
+    volumes:
+      - epaper_mqtt:/mosquitto/data
+    ports:
+      - 8883:8883/tcp
 volumes:
   epaper_db:
+  epaper_mqtt:

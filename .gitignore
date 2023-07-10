@@ -1,3 +1,5 @@
 .env
 static/tmp
 src/config.json
+mosquitto/pki
+mosquitto/mosquitto.passwd
