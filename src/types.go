@@ -11,3 +11,9 @@ type Config struct {
 	EPaperDisplayHeight int    `json:"ePaperDisplayHeight"`
 	StaticContentPath   string `json:"staticContentPath"`
 }
+
+type Authorzation struct {
+	ID         int
+	AuthCode   string
+	UserCookie *string
+}

@@ -13,12 +13,14 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/nottherealjoe/epaper_backend"
-	"github.com/nottherealjoe/epaper_backend/repository"
 )
 
 func setUpHandlers(router *mux.Router, handler epaper_backend.HandlerHolder) {
+	// Pi Handlers
+	router.HandleFunc("/disp/auth-qr", handler.AuthQRHandlerFunc)
+
+	// Web Handlers
 	router.HandleFunc("/", handler.RootHandlerFunc)
-	router.HandleFunc("/api/disp/auth-qr", handler.AuthQRHandlerFunc)
 
 	router.PathPrefix("/static").HandlerFunc(handler.StaticContentHandlerFunc)
 }
