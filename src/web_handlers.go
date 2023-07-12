@@ -10,19 +10,22 @@ const AUTH_COOKIE_NAME = "sauce_auth"
 func (h HandlerHolder) RootHandlerFunc(w http.ResponseWriter, r *http.Request) {
 	if !r.URL.Query().Has("c") {
 		w.WriteHeader(401)
-		w.Write([]byte("Unauthorized - an auth code is required."))
+		w.Write([]byte("Sorry, an auth code is required."))
 		return
 	}
 
 	authOk, cookie := h.repo.UseAuthorization(r.URL.Query().Get("c"))
 	if !authOk {
-		w.WriteHeader(401)
-		w.Write([]byte("Unauthorized - an auth code is required."))
+		w.WriteHeader(403)
+		w.Write([]byte("That auth code is not valid or has expired. Try scanning a fresh QR code."))
 		return
 	}
 
+	// Tell pi to update the QR code
+	h.mqttClient.UpdateQRCode(h.repo.CreateAuthoriztion())
+
+	// Set the newly generated auth cookie on the client
 	w.Header().Add("Set-Cookie", AUTH_COOKIE_NAME+"="+*cookie)
-	//TODO: Tell pi to update the QR code
 
 	http.ServeFile(w, r, h.config.StaticContentPath+"/index.html")
 }
