@@ -4,16 +4,18 @@ import (
 	"net/http"
 )
 
-func NewHandler(repo *MysqlRepository, config *Config) HandlerHolder {
+func NewHandler(repo *MysqlRepository, config *Config, mqttClient *MQTTClient) HandlerHolder {
 	return HandlerHolder{
-		repo:   repo,
-		config: config,
+		repo:       repo,
+		config:     config,
+		mqttClient: mqttClient,
 	}
 }
 
 type HandlerHolder struct {
-	repo   *MysqlRepository
-	config *Config
+	repo       *MysqlRepository
+	config     *Config
+	mqttClient *MQTTClient
 }
 
 // SampleHandler is a simple handler that returns a test message

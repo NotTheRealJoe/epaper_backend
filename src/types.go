@@ -10,6 +10,11 @@ type Config struct {
 	PublicBasePath      string `json:"publicBasePath"`
 	EPaperDisplayHeight int    `json:"ePaperDisplayHeight"`
 	StaticContentPath   string `json:"staticContentPath"`
+	MQTTBrokerAddress   string `json:"mqttBrokerAddress"`
+	MQTTBrokerPort      int    `json:"mqttBrokerPort"`
+	MQTTUsername        string `json:"mqttUsername"`
+	MQTTPassword        string `json:"mqttPassword"`
+	MQTTPrefix          string `json:"mqttPrefix"`
 }
 
 type Authorzation struct {

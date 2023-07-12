@@ -16,13 +16,14 @@ import (
 )
 
 func setUpHandlers(router *mux.Router, handler epaper_backend.HandlerHolder) {
+	handlerHolder := epaper_backend.HandlerHolder{}
+
 	// Pi Handlers
-	router.HandleFunc("/disp/auth-qr", handler.AuthQRHandlerFunc)
+	router.HandleFunc("/disp/auth-qr", handlerHolder.AuthQRHandlerFunc)
 
 	// Web Handlers
-	router.HandleFunc("/", handler.RootHandlerFunc)
-
-	router.PathPrefix("/static").HandlerFunc(handler.StaticContentHandlerFunc)
+	router.HandleFunc("/", handlerHolder.RootHandlerFunc)
+	router.PathPrefix("/static").HandlerFunc(handlerHolder.StaticContentHandlerFunc)
 }
 
 func main() {
@@ -46,13 +47,15 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	repo := repository.CreateMysqlRepository(db)
+	repo := epaper_backend.CreateMysqlRepository(db)
 	if !repo.CheckConnection() {
 		log.Fatal("Failed to connect to database!")
 	}
 
+	mqttClient := epaper_backend.NewMQTTClient(repo, config)
+
 	// start web server
-	handler := epaper_backend.NewHandler(&repo, &config)
+	handler := epaper_backend.NewHandler(&repo, &config, &mqttClient)
 	router := mux.NewRouter()
 	setUpHandlers(router, handler)
 	listenPort := strconv.Itoa(config.ListenPort)
