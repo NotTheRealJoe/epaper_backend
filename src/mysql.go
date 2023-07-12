@@ -26,12 +26,17 @@ func CreateMysqlRepository(db *sql.DB) MysqlRepository {
 func (r MysqlRepository) CheckConnection() bool {
 	row := r.db.QueryRow("SELECT * FROM connection_verify")
 	var result string
-	row.Scan(&result)
-	return result == CONNECTION_VERIFY_STRING
+	var comment string
+	row.Scan(&result, &comment)
+	if result == CONNECTION_VERIFY_STRING {
+		log.Printf("%s: %s\n", "DB connection verify succeeded", comment)
+		return true
+	}
+	return false
 }
 
 // CreateAuthorization generates and authorization code, saves it to the database, and returns it
-func (r MysqlRepository) CreateAuthoriztion() string {
+func (r MysqlRepository) CreateAuthorization() string {
 	authCode := ""
 	for i := 0; i < AUTH_CODE_LENGTH; i++ {
 		authCode = authCode + string(AUTH_CODE_ALLOWED_CHARACTERS[rand.Intn(len(AUTH_CODE_ALLOWED_CHARACTERS))])
