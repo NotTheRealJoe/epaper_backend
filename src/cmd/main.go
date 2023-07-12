@@ -40,7 +40,7 @@ func main() {
 	}
 	db, err := sql.Open("mysql", mysqlConfig.FormatDSN())
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal(fmt.Errorf("%s :: %w", "Failed to connect to database.", err))
 	}
 	defer db.Close()
 	err = db.Ping()
@@ -49,10 +49,10 @@ func main() {
 	}
 	repo := epaper_backend.CreateMysqlRepository(db)
 	if !repo.CheckConnection() {
-		log.Fatal("Failed to connect to database!")
+		log.Fatal("Failed to connect to database! Connection step passed, but verify string didn't match.")
 	}
 
-	mqttClient := epaper_backend.NewMQTTClient(repo, config)
+	mqttClient := epaper_backend.NewMQTTClient(&repo, &config)
 
 	// start web server
 	handler := epaper_backend.NewHandler(&repo, &config, &mqttClient)
@@ -63,7 +63,7 @@ func main() {
 		Handler: router,
 		Addr:    ":" + listenPort,
 	}
-	println("Server listening on " + listenPort + "...")
+	log.Println("Server listening on " + listenPort + "...")
 	log.Fatal(server.ListenAndServe())
 }
 

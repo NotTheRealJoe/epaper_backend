@@ -10,7 +10,7 @@ import (
 // AuthQRHandlerFunc handles endpoint for creating a new authorization code and generating a QR code for it
 func (h HandlerHolder) AuthQRHandlerFunc(w http.ResponseWriter, r *http.Request) {
 	// create and save authorization code
-	authCode := h.repo.CreateAuthoriztion()
+	authCode := h.repo.CreateAuthorization()
 
 	// generate the qr to a temp file
 	qrCodeData, err := qrcode.Encode(

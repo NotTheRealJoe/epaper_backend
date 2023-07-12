@@ -22,7 +22,7 @@ func (h HandlerHolder) RootHandlerFunc(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Tell pi to update the QR code
-	h.mqttClient.UpdateQRCode(h.repo.CreateAuthoriztion())
+	h.mqttClient.UpdateQRCode(h.repo.CreateAuthorization())
 
 	// Set the newly generated auth cookie on the client
 	w.Header().Add("Set-Cookie", AUTH_COOKIE_NAME+"="+*cookie)

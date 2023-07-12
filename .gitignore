@@ -3,3 +3,4 @@ static/tmp
 src/config.json
 mosquitto/pki
 mosquitto/mosquitto.passwd
+__debug_bin
