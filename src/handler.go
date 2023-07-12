@@ -4,7 +4,7 @@ import (
 	"net/http"
 )
 
-func NewHandler(repo *MysqlRepository, config *Config, mqttClient *MQTTClient) HandlerHolder {
+func NewHandlerHolder(repo *MysqlRepository, config *Config, mqttClient *MQTTClient) HandlerHolder {
 	return HandlerHolder{
 		repo:       repo,
 		config:     config,

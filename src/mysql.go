@@ -50,10 +50,14 @@ func (r MysqlRepository) CreateAuthorization() string {
 	return authCode
 }
 
+// UseAuthorization takes in a URL authorization code and uses it. Using it means marking it so that it cannot be used
+// by another client, and issuing a cookie that the client who presented the authCode can continue to be authorized by.
+// If the authCode is invalid, function returns (ok=false, cookie=nil). If the authCode is valid, its status is updated
+// in the database, a cookie is generated, and (ok=true, cookie=<the newly generated cookie>) is returned.
 func (r MysqlRepository) UseAuthorization(authCode string) (ok bool, cookie *string) {
-	row := r.db.QueryRow("SELECT * FROM authorizations WHERE authorization = ? AND user_cookie IS NULL", authCode)
+	row := r.db.QueryRow("SELECT `id`, `authorization` FROM `authorizations` WHERE `authorization` = ? AND user_cookie IS NULL", authCode)
 	result := Authorzation{}
-	err := row.Scan(&result.ID, &result.AuthCode, &result.UserCookie)
+	err := row.Scan(&result.ID, &result.AuthCode)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return false, nil
@@ -62,15 +66,28 @@ func (r MysqlRepository) UseAuthorization(authCode string) (ok bool, cookie *str
 		}
 	}
 
+	// generate a random userCookie
 	userCookie := ""
 	for i := 0; i < USER_COOKIE_LENGTH; i++ {
-		authCode = userCookie + string(AUTH_CODE_ALLOWED_CHARACTERS[rand.Intn(len(AUTH_CODE_ALLOWED_CHARACTERS))])
+		userCookie = userCookie + string(AUTH_CODE_ALLOWED_CHARACTERS[rand.Intn(len(AUTH_CODE_ALLOWED_CHARACTERS))])
 	}
 
-	_, err = r.db.Exec("UPDATE authorizations SET user_cookie = ? WHERE authorization = ?", userCookie, authCode)
+	// save the new userCookie
+	_, err = r.db.Exec("UPDATE authorizations SET user_cookie = ?, use_started=NOW() WHERE authorization = ?", userCookie, authCode)
 	if err != nil {
 		log.Fatal(err)
 	}
 
+	// return the generated cookie
 	return true, &userCookie
+}
+
+func (r MysqlRepository) CookieIsValid(cookie string) bool {
+	row := r.db.QueryRow("SELECT COUNT(*) FROM `authorizations` WHERE `user_cookie` = ?", cookie)
+	var result int
+	err := row.Scan(&result)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return result > 0
 }

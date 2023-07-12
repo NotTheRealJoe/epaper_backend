@@ -10,6 +10,7 @@ type Config struct {
 	PublicBasePath      string     `json:"publicBasePath"`
 	EPaperDisplayHeight int        `json:"ePaperDisplayHeight"`
 	StaticContentPath   string     `json:"staticContentPath"`
+	TemplatesPath       string     `json:"templatesPath"`
 	MQTT                MQTTConfig `json:"mqtt"`
 }
 
@@ -25,5 +26,6 @@ type MQTTConfig struct {
 type Authorzation struct {
 	ID         int
 	AuthCode   string
+	UseStarted *string
 	UserCookie *string
 }

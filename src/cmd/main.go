@@ -15,9 +15,7 @@ import (
 	"github.com/nottherealjoe/epaper_backend"
 )
 
-func setUpHandlers(router *mux.Router, handler epaper_backend.HandlerHolder) {
-	handlerHolder := epaper_backend.HandlerHolder{}
-
+func setUpHandlers(router *mux.Router, handlerHolder epaper_backend.HandlerHolder) {
 	// Pi Handlers
 	router.HandleFunc("/disp/auth-qr", handlerHolder.AuthQRHandlerFunc)
 
@@ -55,7 +53,7 @@ func main() {
 	mqttClient := epaper_backend.NewMQTTClient(&repo, &config)
 
 	// start web server
-	handler := epaper_backend.NewHandler(&repo, &config, &mqttClient)
+	handler := epaper_backend.NewHandlerHolder(&repo, &config, &mqttClient)
 	router := mux.NewRouter()
 	setUpHandlers(router, handler)
 	listenPort := strconv.Itoa(config.ListenPort)
