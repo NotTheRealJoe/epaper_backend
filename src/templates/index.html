@@ -106,15 +106,17 @@
           const artist = prompt("Artist's name: ");
 
           //TODO: Disable inputs and show sending message
-
-          const uploadResponse = await fetch("api.php?action=post",  {
+          const response = await fetch("/api/drawing", {
             method: "POST",
-            body: canvas.toDataURL("image/webp")
+            body: JSON.stringify({
+              artist: artist,
+              imageDataUrl: canvas.toDataURL("image/png")
+            }),
+            headers: {
+              "Content-Type": "application/json"
+            },
           });
-
-          //TODO: Something other than this when its done.
-          alert("Upload done.");
-        })
+        });
     </script>
 </body>
 </html>
