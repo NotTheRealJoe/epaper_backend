@@ -9,7 +9,7 @@ import (
 )
 
 const AUTH_CODE_LENGTH = 8
-const AUTH_CODE_ALLOWED_CHARACTERS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890-._~[]@!$()*,;"
+const AUTH_CODE_ALLOWED_CHARACTERS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890-._~[]@!$()*,"
 const USER_COOKIE_LENGTH = 60
 
 const CONNECTION_VERIFY_STRING = "Y|EPi0`^x~C,dvFhT(>C0&pWiXESk*'&g;V3o}Xu38U[89&t+19!6G+;C4j>S\\S6peO\"bo/=@p}qY\"xrAPkZyY!.v_EcKZ]Dq\\kn"
