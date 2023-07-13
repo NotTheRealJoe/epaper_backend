@@ -21,6 +21,7 @@ func setUpHandlers(router *mux.Router, handlerHolder epaper_backend.HandlerHolde
 
 	// Web Handlers
 	router.HandleFunc("/", handlerHolder.RootHandlerFunc)
+	router.HandleFunc("/favicon.ico", handlerHolder.FaviconHandler)
 	router.PathPrefix("/static").HandlerFunc(handlerHolder.StaticContentHandlerFunc)
 	// Web API handlers
 	router.HandleFunc("/api/drawing", handlerHolder.UploadImageHandlerFunc)

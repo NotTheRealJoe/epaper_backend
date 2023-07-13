@@ -58,6 +58,11 @@ func (h HandlerHolder) StaticContentHandlerFunc(w http.ResponseWriter, r *http.R
 	http.ServeFile(w, r, h.config.StaticContentPath+"/"+strings.TrimPrefix(r.URL.Path, "/static/"))
 }
 
+func (h HandlerHolder) FaviconHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Cache-Control", "max-age=172800")
+	http.ServeFile(w, r, h.config.StaticContentPath+"/favicon.ico")
+}
+
 // == API Handlers ==
 func (h HandlerHolder) UploadImageHandlerFunc(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "POST" {
