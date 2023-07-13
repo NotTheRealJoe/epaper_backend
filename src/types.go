@@ -29,3 +29,11 @@ type Authorzation struct {
 	UseStarted *string
 	UserCookie *string
 }
+
+type Drawing struct {
+	ID            int64
+	DateCreated   string
+	Author        string
+	Data          []byte
+	Authorization string
+}

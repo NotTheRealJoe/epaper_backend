@@ -5,6 +5,7 @@ import (
 	"errors"
 	"log"
 	"math/rand"
+	"time"
 )
 
 const AUTH_CODE_LENGTH = 8
@@ -90,4 +91,41 @@ func (r MysqlRepository) CookieIsValid(cookie string) bool {
 		log.Fatal(err)
 	}
 	return result > 0
+}
+
+func (r MysqlRepository) GetAuthorizationByCookie(cookie string) (ok bool, authorization *Authorzation) {
+	row := r.db.QueryRow("SELECT `id`, `authorization`, `use_started`, `user_cookie` FROM `authorizations` WHERE `user_cookie` = ?", cookie)
+	err := row.Scan(&authorization.ID, &authorization.AuthCode, &authorization.UseStarted, &authorization.UserCookie)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			ok = false
+			return
+		} else {
+			log.Fatal(err)
+		}
+	}
+	return
+}
+
+func (r MysqlRepository) SaveDrawing(d Drawing) (int64, error) {
+	if d.DateCreated == "" {
+		d.DateCreated = time.Now().Format(time.RFC3339)
+	}
+
+	res, err := r.db.Exec(
+		"INSERT INTO `drawings` (`date_created`, `author`, `data`, `authorization`) VALUES (?, ?, ?, ?)",
+		d.DateCreated,
+		d.Author,
+		d.Data,
+		d.Authorization,
+	)
+	if err != nil {
+		return -1, err
+	}
+
+	return res.LastInsertId()
+}
+
+func (r MysqlRepository) RemoveAuthorization(id int) {
+	r.db.Exec("DELETE FROM `authorizations` WHERE id = ?", id)
 }

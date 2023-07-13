@@ -82,8 +82,8 @@ func (m MQTTClient) UpdateQRCode(newAuthCode string) {
 	m.client.Publish("epaper/cmnd/update-qr", 2, false, generated_code)
 }
 
-func (m MQTTClient) AddDrawing(id int, data []byte) {
-	m.client.Publish("epaper/cmnd/image/add/"+strconv.Itoa(id), 2, false, data)
+func (m MQTTClient) AddDrawing(id int64, data []byte) {
+	m.client.Publish(fmt.Sprintf("epaper/cmnd/image/add/%d", id), 2, false, data)
 }
 
 func (m MQTTClient) RemoveDrawing(id int) {
