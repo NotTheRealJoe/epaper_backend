@@ -94,6 +94,7 @@ func (r MysqlRepository) CookieIsValid(cookie string) bool {
 }
 
 func (r MysqlRepository) GetAuthorizationByCookie(cookie string) (ok bool, authorization *Authorzation) {
+	authorization = &Authorzation{}
 	row := r.db.QueryRow("SELECT `id`, `authorization`, `use_started`, `user_cookie` FROM `authorizations` WHERE `user_cookie` = ?", cookie)
 	err := row.Scan(&authorization.ID, &authorization.AuthCode, &authorization.UseStarted, &authorization.UserCookie)
 	if err != nil {
@@ -104,6 +105,7 @@ func (r MysqlRepository) GetAuthorizationByCookie(cookie string) (ok bool, autho
 			log.Fatal(err)
 		}
 	}
+	ok = true
 	return
 }
 
@@ -113,8 +115,7 @@ func (r MysqlRepository) SaveDrawing(d Drawing) (int64, error) {
 	}
 
 	res, err := r.db.Exec(
-		"INSERT INTO `drawings` (`date_created`, `author`, `data`, `authorization`) VALUES (?, ?, ?, ?)",
-		d.DateCreated,
+		"INSERT INTO `drawings` (`date_created`, `author`, `data`, `authorization`) VALUES (NOW(), ?, ?, ?)",
 		d.Author,
 		d.Data,
 		d.Authorization,

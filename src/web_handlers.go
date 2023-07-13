@@ -1,7 +1,10 @@
 package epaper_backend
 
 import (
+	"encoding/base64"
+	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"log"
 	"net/http"
@@ -57,7 +60,12 @@ func (h HandlerHolder) StaticContentHandlerFunc(w http.ResponseWriter, r *http.R
 
 // == API Handlers ==
 func (h HandlerHolder) UploadImageHandlerFunc(w http.ResponseWriter, r *http.Request) {
-	//Check cookie
+	if r.Method != "POST" {
+		w.WriteHeader(405)
+		return
+	}
+
+	// Check cookie
 	cookie, err := r.Cookie(AUTH_COOKIE_NAME)
 	if err != nil {
 		if errors.Is(err, http.ErrNoCookie) {
@@ -75,17 +83,42 @@ func (h HandlerHolder) UploadImageHandlerFunc(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	// Save image data
-	bodyData, err := io.ReadAll(r.Body)
+	if strings.ToLower(r.Header.Get("content-type")) != "application/json" {
+		w.WriteHeader(406)
+		return
+	}
+
+	bodyRaw, err := io.ReadAll(r.Body)
 	if err != nil {
 		log.Print(err)
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		return
 	}
 
+	var submitDrawingRequest SubmitDrawingRequest
+	err = json.Unmarshal(bodyRaw, &submitDrawingRequest)
+	if err != nil {
+		log.Print(err)
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	imageData, innerContentType, err := decodeDataURL(submitDrawingRequest.ImageDataURL)
+	if err != nil {
+		log.Print(err)
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+	if innerContentType != "image/png" {
+		w.Header().Set("Content-Type", "text/plain")
+		w.Write([]byte("Only PNG (image/png) encoded data can be accpeted."))
+		w.WriteHeader(400)
+		return
+	}
+
 	drawing := Drawing{
-		//TODO: Maybe get author from GET parameter
-		Data:          bodyData,
+		Author:        submitDrawingRequest.Artist,
+		Data:          imageData,
 		Authorization: authorization.AuthCode,
 	}
 	createdId, err := h.repo.SaveDrawing(drawing)
@@ -95,9 +128,29 @@ func (h HandlerHolder) UploadImageHandlerFunc(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	h.mqttClient.AddDrawing(createdId, bodyData)
+	h.mqttClient.AddDrawing(createdId, drawing.Data)
 	h.repo.RemoveAuthorization(authorization.ID)
 
 	// on success, return 201 with empty body
 	w.WriteHeader(201)
+}
+
+func decodeDataURL(dataURL string) ([]byte, string, error) {
+	if !strings.HasPrefix(dataURL, "data:") {
+		return []byte{}, "", fmt.Errorf("string not recognized as a valid data URL")
+	}
+
+	contentType := dataURL[5:strings.Index(dataURL, ";")]
+
+	dataURLFormat := dataURL[strings.Index(dataURL, ";")+1 : strings.Index(dataURL, ",")]
+	if dataURLFormat != "base64" {
+		return []byte{}, "", fmt.Errorf("unrecognized data URL format: " + dataURLFormat)
+	}
+
+	decoded, err := base64.StdEncoding.DecodeString(dataURL[strings.Index(dataURL, ",")+1:])
+	if err != nil {
+		return []byte{}, "", fmt.Errorf("%s :: %w", "failed to decode base64 data", err)
+	}
+
+	return decoded, contentType, nil
 }

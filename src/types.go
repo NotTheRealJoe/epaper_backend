@@ -37,3 +37,8 @@ type Drawing struct {
 	Data          []byte
 	Authorization string
 }
+
+type SubmitDrawingRequest struct {
+	Artist       string `json:"artist"`
+	ImageDataURL string `json:"imageDataUrl"`
+}
