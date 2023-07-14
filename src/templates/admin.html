@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Drawing Admin</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      font-family: sans-serif;
+    }
+
+    p {
+      padding-left: 1em;
+    }
+
+    img {
+      max-width: 100%;
+    }
+
+    .drawing-container {
+      width: calc(100% - 4px - 2em);
+      border: 2px solid black;
+      margin: 0 1em 1em 1em;
+    }
+  </style>
+</head>
+<body>
+  <div id="drawings-container"></div>
+  <script>
+    window.addEventListener("DOMContentLoaded", async () => {
+      const drawingsContainer = document.getElementById("drawings-container")
+
+      async function getDrawings() {
+        const response = await fetch("/admin/api/drawings")
+        return await response.json()
+      }
+
+      for (const drawing of (await getDrawings())) {
+        const drawingContainer = document.createElement("div")
+        drawingContainer.classList = "drawing-container"
+
+        const imageElem = document.createElement("img")
+        imageElem.src = "/admin/api/drawing/" + drawing.id
+
+        const pElem = document.createElement("p")
+        pElem.innerText = "ID: " + drawing.id + " Artist: " + drawing.author + " "
+        
+        const removeLinkElem = document.createElement("a")
+        removeLinkElem.innerText = "Remove"
+        removeLinkElem.href = "javascript:void(0)"
+
+        removeLinkElem.addEventListener("click", async (ev) => {
+          response = await fetch("/admin/api/drawing/" + drawing.id, {
+            method: "DELETE"
+          })
+
+          if (response.ok) {
+            alert("Drawing " + drawing.id + " deleted.")
+            window.reload()
+          } else {
+            alert("Delete failed:\n" + (await response.text()))
+          }
+        });
+        
+        // structure building
+        pElem.appendChild(removeLinkElem)
+        drawingContainer.appendChild(pElem)
+        drawingContainer.appendChild(imageElem)
+        drawingsContainer.appendChild(drawingContainer)
+      }
+    })
+  </script>
+</body>
+</html>
