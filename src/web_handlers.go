@@ -177,7 +177,7 @@ func (h HandlerHolder) AdminGetDrawingsHandlerFunc(w http.ResponseWriter, r *htt
 	w.Write(encoded)
 }
 
-func (h HandlerHolder) AdminGetDrawingDataHandlerFunc(w http.ResponseWriter, r *http.Request) {
+func (h HandlerHolder) AdminDrawingHandlerFunc(w http.ResponseWriter, r *http.Request) {
 	if !h.verifyAdminBasicAuth(r) {
 		w.WriteHeader(403)
 		return
@@ -192,16 +192,33 @@ func (h HandlerHolder) AdminGetDrawingDataHandlerFunc(w http.ResponseWriter, r *
 		return
 	}
 
-	data, err := h.repo.GetDrawingData(drawingID)
-	if err != nil {
-		w.Header().Set("Content-Type", "text/plain")
-		w.WriteHeader(500)
-		w.Write([]byte(err.Error()))
-		return
-	}
+	if r.Method == "GET" {
+		data, err := h.repo.GetDrawingData(drawingID)
+		if err != nil {
+			w.Header().Set("Content-Type", "text/plain")
+			w.WriteHeader(500)
+			w.Write([]byte(err.Error()))
+			return
+		}
 
-	w.Header().Set("Content-Type", "image/png")
-	w.Write(*data)
+		w.Header().Set("Content-Type", "image/png")
+		w.Write(*data)
+	} else if r.Method == "DELETE" {
+		err := h.repo.MarkDrawingAsRemoved(drawingID)
+		if err != nil {
+			w.Header().Set("Content-Type", "text/plain")
+			w.WriteHeader(500)
+			w.Write([]byte(err.Error()))
+		}
+
+		// tell the pi to remove it
+		h.mqttClient.RemoveDrawing(drawingID)
+
+		// send empty body with 200 OK
+	} else {
+		w.WriteHeader(405)
+		// send empty body
+	}
 }
 
 func decodeDataURL(dataURL string) ([]byte, string, error) {

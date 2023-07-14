@@ -157,6 +157,11 @@ func (r MysqlRepository) GetDrawingData(id int) (*[]byte, error) {
 	return &out, nil
 }
 
+func (r MysqlRepository) MarkDrawingAsRemoved(id int) error {
+	_, err := r.db.Exec("UPDATE `drawings` SET `removed`=1 WHERE `id`=?", id)
+	return err
+}
+
 func (r MysqlRepository) RemoveAuthorization(id int) {
 	r.db.Exec("DELETE FROM `authorizations` WHERE id = ?", id)
 }

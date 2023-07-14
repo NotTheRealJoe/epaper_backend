@@ -56,8 +56,8 @@
           })
 
           if (response.ok) {
-            alert("Drawing " + drawing.id + " deleted.")
-            window.reload()
+            alert("Drawing " + drawing.id + " deleted successfully.")
+            window.location.reload()
           } else {
             alert("Delete failed:\n" + (await response.text()))
           }
