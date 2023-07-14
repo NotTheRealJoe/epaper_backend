@@ -8,6 +8,8 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
+	"time"
 
 	"github.com/go-sql-driver/mysql"
 
@@ -44,10 +46,8 @@ func main() {
 		log.Fatal(fmt.Errorf("%s :: %w", "Failed to connect to database.", err))
 	}
 	defer db.Close()
-	err = db.Ping()
-	if err != nil {
-		log.Fatal(err)
-	}
+	waitForDBToWork(db)
+
 	repo := epaper_backend.CreateMysqlRepository(db)
 	if !repo.CheckConnection() {
 		log.Fatal("Failed to connect to database! Connection step passed, but verify string didn't match.")
@@ -66,6 +66,23 @@ func main() {
 	}
 	log.Println("Server listening on " + listenPort + "...")
 	log.Fatal(server.ListenAndServe())
+}
+
+func waitForDBToWork(db *sql.DB) {
+	err := db.Ping()
+	for tries := 0; tries < 30; tries++ {
+		if !strings.Contains(err.Error(), "connection refused") {
+			log.Fatal(fmt.Errorf("%s :: %w", "database ping failed", err))
+		}
+
+		log.Print("Failed to ping database, waiting one second")
+		time.Sleep(time.Second)
+
+		if err = db.Ping(); err == nil {
+			return
+		}
+	}
+	log.Fatal("did not ping database in time")
 }
 
 func loadConfigFile() epaper_backend.Config {
