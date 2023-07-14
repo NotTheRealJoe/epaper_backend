@@ -23,6 +23,10 @@
       border: 2px solid black;
       margin: 0 1em 1em 1em;
     }
+
+    .removed {
+      color: darkred;
+    }
   </style>
 </head>
 <body>
@@ -45,6 +49,13 @@
 
         const pElem = document.createElement("p")
         pElem.innerText = "ID: " + drawing.id + " Artist: " + drawing.author + " "
+
+        if(drawing.removed) {
+          removedSpanElem = document.createElement("span")
+          removedSpanElem.classList = "removed"
+          removedSpanElem.innerText = "[REMOVED] "
+          pElem.appendChild(removedSpanElem)
+        }
         
         const removeLinkElem = document.createElement("a")
         removeLinkElem.innerText = "Remove"
