@@ -57,12 +57,28 @@ func (h HandlerHolder) RootHandlerFunc(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h HandlerHolder) StaticContentHandlerFunc(w http.ResponseWriter, r *http.Request) {
+	if strings.Contains(r.URL.Path, "..") {
+		w.WriteHeader(400)
+		return
+	}
 	http.ServeFile(w, r, h.config.StaticContentPath+"/"+strings.TrimPrefix(r.URL.Path, "/static/"))
 }
 
 func (h HandlerHolder) FaviconHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Cache-Control", "max-age=172800")
 	http.ServeFile(w, r, h.config.StaticContentPath+"/favicon.ico")
+}
+
+func (h HandlerHolder) AdminPanelHandlerFunc(w http.ResponseWriter, r *http.Request) {
+	if !h.verifyAdminBasicAuth(r) {
+		w.Header().Set("WWW-Authenticate", "Basic realm=\"Epaper Admin\"")
+		w.Header().Set("Content-Type", "text/plain")
+		w.WriteHeader(401)
+		w.Write([]byte("Unauthorized. Try again."))
+		return
+	}
+
+	http.ServeFile(w, r, h.config.TemplatesPath+"/admin.html")
 }
 
 // == API Handlers ==
