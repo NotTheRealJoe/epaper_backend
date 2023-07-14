@@ -1,17 +1,18 @@
 package epaper_backend
 
 type Config struct {
-	ListenPort          int        `json:"listenPort"`
-	DBHost              string     `json:"dbHost"`
-	DBPort              string     `json:"dbPort"`
-	DBUsername          string     `json:"dbUsername"`
-	DBPassword          string     `json:"dbPassword"`
-	DBName              string     `json:"dbName"`
-	PublicBasePath      string     `json:"publicBasePath"`
-	EPaperDisplayHeight int        `json:"ePaperDisplayHeight"`
-	StaticContentPath   string     `json:"staticContentPath"`
-	TemplatesPath       string     `json:"templatesPath"`
-	MQTT                MQTTConfig `json:"mqtt"`
+	ListenPort          int         `json:"listenPort"`
+	DBHost              string      `json:"dbHost"`
+	DBPort              string      `json:"dbPort"`
+	DBUsername          string      `json:"dbUsername"`
+	DBPassword          string      `json:"dbPassword"`
+	DBName              string      `json:"dbName"`
+	PublicBasePath      string      `json:"publicBasePath"`
+	EPaperDisplayHeight int         `json:"ePaperDisplayHeight"`
+	StaticContentPath   string      `json:"staticContentPath"`
+	TemplatesPath       string      `json:"templatesPath"`
+	MQTT                MQTTConfig  `json:"mqtt"`
+	Admin               AdminConfig `json:"admin"`
 }
 
 type MQTTConfig struct {
@@ -24,6 +25,12 @@ type MQTTConfig struct {
 	CAFile            string `json:"caFile"`
 }
 
+type AdminConfig struct {
+	Username           string `json:"username"`
+	PasswordHashBase64 string `json:"passwordHash"`
+	PasswordHash       []byte
+}
+
 type Authorzation struct {
 	ID         int
 	AuthCode   string
@@ -32,11 +39,12 @@ type Authorzation struct {
 }
 
 type Drawing struct {
-	ID            int64
-	DateCreated   string
-	Author        string
-	Data          []byte
-	Authorization string
+	ID            int64  `json:"id"`
+	DateCreated   string `json:"dateCreated"`
+	Author        string `json:"author"`
+	Data          []byte `json:"-"`
+	Authorization string `json:"-"`
+	Removed       bool   `json:"removed"`
 }
 
 type SubmitDrawingRequest struct {

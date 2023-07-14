@@ -1,6 +1,7 @@
 package epaper_backend
 
 import (
+	"crypto/sha256"
 	"encoding/base64"
 	"encoding/json"
 	"errors"
@@ -140,6 +141,25 @@ func (h HandlerHolder) UploadImageHandlerFunc(w http.ResponseWriter, r *http.Req
 	w.WriteHeader(201)
 }
 
+func (h HandlerHolder) AdminGetDrawingsHandlerFunc(w http.ResponseWriter, r *http.Request) {
+	if !h.verifyAdminBasicAuth(r) {
+		w.WriteHeader(403)
+		return
+	}
+
+	drawings, err := h.repo.GetAllDrawingsRemovedLast()
+	if err != nil {
+		formattedError := fmt.Sprintf("%s:\n%v", "Failed to get drawings from database:", err)
+		log.Print(formattedError)
+		w.WriteHeader(500)
+		w.Write([]byte(formattedError))
+	}
+
+	encoded, _ := json.Marshal(*drawings)
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(encoded)
+}
+
 func decodeDataURL(dataURL string) ([]byte, string, error) {
 	if !strings.HasPrefix(dataURL, "data:") {
 		return []byte{}, "", fmt.Errorf("string not recognized as a valid data URL")
@@ -158,4 +178,57 @@ func decodeDataURL(dataURL string) ([]byte, string, error) {
 	}
 
 	return decoded, contentType, nil
+}
+
+func (h HandlerHolder) verifyAdminBasicAuth(r *http.Request) bool {
+	authHeader := r.Header.Get("authorization")
+	if authHeader == "" {
+		return false
+	}
+
+	// for safety, disallow if config username or password are empty
+	if h.config.Admin.Username == "" || h.config.Admin.PasswordHashBase64 == "" {
+		return false
+	}
+
+	headerParts := strings.Split(authHeader, " ")
+	if len(headerParts) != 2 || headerParts[0] != "Basic" {
+		return false
+	}
+
+	decoded, err := base64.StdEncoding.DecodeString(headerParts[1])
+	if err != nil {
+		return false
+	}
+
+	decodedParts := strings.Split(string(decoded), ":")
+	//return len(decodedParts) == 2 && headerParts[0] == h.config.Admin.Username && sha256.New(headerParts[1]) != config.Admin.PasswordHash
+	if len(decodedParts) != 2 || decodedParts[0] != h.config.Admin.Username {
+		return false
+	}
+
+	return byteSlicesEqual(
+		passwordHash(decodedParts[1]),
+		h.config.Admin.PasswordHash,
+	)
+}
+
+func byteSlicesEqual(a []byte, b []byte) bool {
+	if len(a) != len(b) {
+		return false
+	}
+
+	for i := 0; i < len(a); i++ {
+		if a[i] != b[i] {
+			return false
+		}
+	}
+
+	return true
+}
+
+func passwordHash(password string) []byte {
+	h := sha256.New()
+	h.Write([]byte(password))
+	return h.Sum(nil)
 }

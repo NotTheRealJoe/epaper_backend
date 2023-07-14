@@ -127,6 +127,25 @@ func (r MysqlRepository) SaveDrawing(d Drawing) (int64, error) {
 	return res.LastInsertId()
 }
 
+func (r MysqlRepository) GetAllDrawingsRemovedLast() (*[]Drawing, error) {
+	rows, err := r.db.Query("SELECT `id`,`date_created`,`author`,`data`,`authorization`,`removed` FROM `drawings` ORDER BY `removed` ASC, `date_created` DESC")
+	if err != nil {
+		return nil, err
+	}
+
+	drawings := []Drawing{}
+	for rows.Next() {
+		d := Drawing{}
+		err := rows.Scan(&d.ID, &d.DateCreated, &d.Author, &d.Data, &d.Authorization, &d.Removed)
+		if err != nil {
+			return nil, err
+		}
+		drawings = append(drawings, d)
+	}
+
+	return &drawings, nil
+}
+
 func (r MysqlRepository) RemoveAuthorization(id int) {
 	r.db.Exec("DELETE FROM `authorizations` WHERE id = ?", id)
 }

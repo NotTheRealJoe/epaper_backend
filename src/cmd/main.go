@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -27,6 +28,7 @@ func setUpHandlers(router *mux.Router, handlerHolder epaper_backend.HandlerHolde
 	router.PathPrefix("/static").HandlerFunc(handlerHolder.StaticContentHandlerFunc)
 	// Web API handlers
 	router.HandleFunc("/api/drawing", handlerHolder.UploadImageHandlerFunc)
+	router.HandleFunc("/admin/api/drawings", handlerHolder.AdminGetDrawingsHandlerFunc)
 }
 
 func main() {
@@ -101,6 +103,11 @@ func loadConfigFile() epaper_backend.Config {
 	}
 
 	err = json.Unmarshal(configFileRaw, &config)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	config.Admin.PasswordHash, err = base64.StdEncoding.DecodeString(config.Admin.PasswordHashBase64)
 	if err != nil {
 		log.Fatal(err)
 	}
