@@ -15,12 +15,13 @@ type Config struct {
 }
 
 type MQTTConfig struct {
-	BrokerAddress string `json:"brokerAddress"`
-	BrokerPort    int    `json:"brokerPort"`
-	Username      string `json:"username"`
-	Password      string `json:"password"`
-	Prefix        string `json:"prefix"`
-	CAFile        string `json:"caFile"`
+	BrokerAddress     string `json:"brokerAddress"`
+	BrokerTLSHostname string `json:"brokerTlsHostname"`
+	BrokerPort        int    `json:"brokerPort"`
+	Username          string `json:"username"`
+	Password          string `json:"password"`
+	Prefix            string `json:"prefix"`
+	CAFile            string `json:"caFile"`
 }
 
 type Authorzation struct {

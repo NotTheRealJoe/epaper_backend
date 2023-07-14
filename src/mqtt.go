@@ -2,11 +2,9 @@ package epaper_backend
 
 import (
 	"crypto/tls"
-	"crypto/x509"
 	"fmt"
 	"log"
 	"math/rand"
-	"os"
 	"strconv"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
@@ -27,19 +25,9 @@ func NewMQTTClient(repo *MysqlRepository, config *Config) MQTTClient {
 	opts.SetUsername(config.MQTT.Username)
 	opts.SetPassword(config.MQTT.Password)
 
-	// set up TLS config (needed to use a custom CA)
-	certpool := x509.NewCertPool()
-	pemData, err := os.ReadFile(config.MQTT.CAFile)
-	if err != nil {
-		log.Fatal(fmt.Errorf("%s :: %w", "Failed to read TLS CA cert file.", err))
-	}
-	certpool.AppendCertsFromPEM(pemData)
-
 	// attach TLS config to the client options
 	opts.SetTLSConfig(&tls.Config{
-		RootCAs:            certpool,
-		InsecureSkipVerify: true,
-		Renegotiation:      tls.RenegotiateFreelyAsClient,
+		ServerName: config.MQTT.BrokerTLSHostname,
 	})
 
 	// construct client
