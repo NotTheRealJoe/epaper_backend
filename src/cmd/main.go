@@ -70,6 +70,9 @@ func main() {
 
 func waitForDBToWork(db *sql.DB) {
 	err := db.Ping()
+	if err == nil {
+		return
+	}
 	for tries := 0; tries < 30; tries++ {
 		if !strings.Contains(err.Error(), "connection refused") {
 			log.Fatal(fmt.Errorf("%s :: %w", "database ping failed", err))
