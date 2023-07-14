@@ -3,6 +3,7 @@ package epaper_backend
 import (
 	"database/sql"
 	"errors"
+	"fmt"
 	"log"
 	"math/rand"
 	"time"
@@ -144,6 +145,16 @@ func (r MysqlRepository) GetAllDrawingsRemovedLast() (*[]Drawing, error) {
 	}
 
 	return &drawings, nil
+}
+
+func (r MysqlRepository) GetDrawingData(id int) (*[]byte, error) {
+	row := r.db.QueryRow("SELECT `data` FROM `drawings` WHERE `id`=?", id)
+	var out []byte
+	err := row.Scan(&out)
+	if err == sql.ErrNoRows {
+		return nil, fmt.Errorf("%s :: %w", "unable to read drawing data", err)
+	}
+	return &out, nil
 }
 
 func (r MysqlRepository) RemoveAuthorization(id int) {

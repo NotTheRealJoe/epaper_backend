@@ -9,6 +9,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"strconv"
 	"strings"
 )
 
@@ -158,6 +159,33 @@ func (h HandlerHolder) AdminGetDrawingsHandlerFunc(w http.ResponseWriter, r *htt
 	encoded, _ := json.Marshal(*drawings)
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(encoded)
+}
+
+func (h HandlerHolder) AdminGetDrawingDataHandlerFunc(w http.ResponseWriter, r *http.Request) {
+	if !h.verifyAdminBasicAuth(r) {
+		w.WriteHeader(403)
+		return
+	}
+
+	drawingIDStr := strings.TrimPrefix(r.URL.Path, "/admin/api/drawing/")
+	drawingID, err := strconv.Atoi(drawingIDStr)
+	if err != nil {
+		w.Header().Set("Content-Type", "text/plain")
+		w.WriteHeader(400)
+		w.Write([]byte("unable to parse given id parsed as an integer"))
+		return
+	}
+
+	data, err := h.repo.GetDrawingData(drawingID)
+	if err != nil {
+		w.Header().Set("Content-Type", "text/plain")
+		w.WriteHeader(500)
+		w.Write([]byte(err.Error()))
+		return
+	}
+
+	w.Header().Set("Content-Type", "image/png")
+	w.Write(*data)
 }
 
 func decodeDataURL(dataURL string) ([]byte, string, error) {

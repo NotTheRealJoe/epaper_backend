@@ -29,6 +29,7 @@ func setUpHandlers(router *mux.Router, handlerHolder epaper_backend.HandlerHolde
 	// Web API handlers
 	router.HandleFunc("/api/drawing", handlerHolder.UploadImageHandlerFunc)
 	router.HandleFunc("/admin/api/drawings", handlerHolder.AdminGetDrawingsHandlerFunc)
+	router.PathPrefix("/admin/api/drawing").HandlerFunc(handlerHolder.AdminGetDrawingDataHandlerFunc)
 }
 
 func main() {
