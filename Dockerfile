@@ -1,8 +1,10 @@
 # build container
 FROM golang:1.20 AS builder
-COPY src/ /root/app
+COPY src/go.mod /root/app/
+COPY src/go.sum /root/app/
 WORKDIR /root/app
 RUN go mod download
+COPY src/ /root/app
 WORKDIR /root/app/cmd
 RUN go build .
 RUN mv cmd epaper-backend
